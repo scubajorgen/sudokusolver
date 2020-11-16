@@ -385,7 +385,7 @@ public class Sudoku
         
         for (row=0; row<dimension*dimension && !found; row++)
         {
-            if (grid[col/dimension][col/dimension][col%dimension][col%dimension]==value)
+            if (grid[row/dimension][col/dimension][row%dimension][col%dimension]==value)
             {
                 found=true;
             }
@@ -448,8 +448,9 @@ public class Sudoku
     
     /**
      * If there is only one candidate, move it to the grid
+     * The number of element values created
      */
-    public void collapseCandidates()
+    public int collapseCandidates()
     {
         int boxRow;
         int boxCol;
@@ -458,7 +459,9 @@ public class Sudoku
         int value;
         int theValue;
         int count;
+        int found;
 
+        found=0;
         for (boxRow = 0; boxRow < dimension; boxRow++)
         {
             for (cellRow = 0; cellRow < dimension; cellRow++)
@@ -483,11 +486,13 @@ public class Sudoku
                             {
                                 possibleValues[boxRow][boxCol][cellRow][cellCol][theValue-1]=false;
                                 grid[boxRow][boxCol][cellRow][cellCol]=theValue;
+                                found++;
                             }
                         }
                     }
                 }
             }
         }
+        return found;
     }
 }

@@ -19,14 +19,24 @@ public class Solver
         this.sudoku=sudoku;
     }
     
-    public void solve()
+    public int solve()
     {
-        int iterations;
+        int iteration;
+        int count;
         
-        iterations=0;
-        while (iterations!=MAX_ITERATIONS)
+        iteration=0;
+        while (iteration!=MAX_ITERATIONS && !sudoku.isSolved())
         {
-            iterations++;
+            System.out.println("Iteration "+iteration);
+            PatternHiddenSingle.execute(sudoku);
+            count=sudoku.collapseCandidates();
+            if (count>0)
+            {
+                System.out.println(count+" element values found by Hidden Single");
+            }
+            sudoku.dump();
+            iteration++;
         }
+        return iteration;
     }
 }

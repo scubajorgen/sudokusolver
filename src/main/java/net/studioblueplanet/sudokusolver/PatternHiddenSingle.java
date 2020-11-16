@@ -23,19 +23,22 @@ public class PatternHiddenSingle extends Pattern
         int value;
         
         dimension=sudoku.getDimension();
-        for (row=0; row<dimension*dimension; row++);
+        for (row=0; row<dimension*dimension; row++)
         {
-            boxRow=sudoku.indexToBox(row);
+            boxRow =sudoku.indexToBox(row);
             cellRow=sudoku.indexToCell(row);
             for (col=0; col<dimension*dimension; col++)
             {
-                boxCol=sudoku.indexToBox(col);
+                boxCol =sudoku.indexToBox(col);
                 cellCol=sudoku.indexToCell(col);
-                for(value=1; value<=dimension; value++)
+                if (sudoku.getElementValue(boxRow, boxCol, cellRow, cellCol)==Sudoku.UNDEFINED)
                 {
-                    if (sudoku.boxHasValue(boxRow, boxCol, value) || sudoku.rowHasValue(row, value) || sudoku.colHasValue(col, value))
+                    for(value=1; value<=dimension*dimension; value++)
                     {
-                        sudoku.setCandidate(boxRow, boxCol, cellRow, cellCol, value, false);
+                        if (sudoku.boxHasValue(boxRow, boxCol, value) || sudoku.rowHasValue(row, value) || sudoku.colHasValue(col, value))
+                        {
+                            sudoku.setCandidate(boxRow, boxCol, cellRow, cellCol, value, false);
+                        }
                     }
                 }
             }

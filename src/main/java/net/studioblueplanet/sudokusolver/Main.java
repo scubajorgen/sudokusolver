@@ -15,5 +15,9 @@ public class Main
     {
         Sudoku sudoku=new SudokuExampleSimple();
         sudoku.dump();
+        
+        Solver solver=new Solver(sudoku);
+        solver.solve();
+       
     }
 }

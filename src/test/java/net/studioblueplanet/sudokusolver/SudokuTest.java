@@ -287,13 +287,15 @@ public class SudokuTest
     public void testCollapseCandidates()
     {
         int value;
+        int count;
         for (value=1; value<=9; value++)
         {
             theInstance.setCandidate(0, 0, 1, 0, value, false);
         }
         theInstance.setCandidate(0, 0, 1, 0, 5, true);
-        theInstance.collapseCandidates();
+        count=theInstance.collapseCandidates();
         assertEquals(5, theInstance.getElementValue(0, 0, 1, 0));
+        assertEquals(1, count);
         assertEquals(Sudoku.UNDEFINED, theInstance.getElementValue(0, 0, 1, 1));
     }
 }

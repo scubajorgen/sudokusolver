@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-
+import org.junit.jupiter.api.Disabled;
 
 /**
  *
@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class PatternHiddenSingleTest
 {
-    Sudoku sudoku;
     
     public PatternHiddenSingleTest()
     {
@@ -38,20 +37,6 @@ public class PatternHiddenSingleTest
     @BeforeEach
     public void setUp()
     {
-        String content="981|  3| 4 "+
-                       "   | 79|25 "+
-                       " 7 |1 6| 83"+
-                       "___________"+
-                       " 9 |4 7|5 2"+
-                       "  8| 1 |7  "+
-                       "7 3|6 5| 1 "+
-                       "___________"+
-                       "31 |7 4| 9 "+
-                       " 69|23 |   "+
-                       " 5 |9  |324";     
-       
-        sudoku=new Sudoku(3);
-        sudoku.fill(content);
     }
     
     @AfterEach
@@ -63,38 +48,135 @@ public class PatternHiddenSingleTest
      * Test of execute method, of class PatternHiddenSingle.
      */
     @Test
-    public void testExecuteSingle()
+    public void testExecuteCell()
     {
-        System.out.println("execute");
+        System.out.println("execute - cell");
+        String content="   |   |   "+
+                       "   |   |   "+
+                       "   |   |   "+
+                       "___________"+
+                       "3  |   |46 "+
+                       "   |   | 78"+
+                       "   |   |  1"+
+                       "___________"+
+                       "   |   |   "+
+                       "   |   |3  "+
+                       "   |   |   ";        
+
+        Sudoku sudoku = new Sudoku(3);
+        sudoku.fill(content);
+        int expResult = 1;
         sudoku.dump();
-        PatternHiddenSingle.execute(sudoku);
-        sudoku.collapseCandidates();
+        
+        assertEquals(Sudoku.UNDEFINED, sudoku.getElementValue(1, 2, 2, 1));
+        
+        int result = PatternHiddenSingle.execute(sudoku);
         sudoku.dump();
-        assertEquals(5, sudoku.getElementValue(0, 1, 0, 0));
-        assertEquals(Sudoku.UNDEFINED, sudoku.getElementValue(2, 1, 2, 1));
-        assertEquals(false, sudoku.isSolved());
+        assertEquals(expResult, result);
+        assertEquals(3, sudoku.getElementValue(1, 2, 2, 1));
     }
     
     /**
      * Test of execute method, of class PatternHiddenSingle.
      */
     @Test
-    public void testExecuteMultiple()
+    public void testExecuteRow()
     {
-        System.out.println("execute");
+        System.out.println("execute - row");
+        String content="   |   |   "+
+                       " 3 |   |   "+
+                       "   |   |   "+
+                       "___________"+
+                       "1  |4 6|7 9"+
+                       "   |   |   "+
+                       "   |   |   "+
+                       "___________"+
+                       "   | 3 |   "+
+                       "   |   | 3 "+
+                       "   |   |   ";        
+
+        Sudoku sudoku = new Sudoku(3);
+        sudoku.fill(content);
+        int expResult = 1;
         sudoku.dump();
-        PatternHiddenSingle.execute(sudoku);
-        sudoku.collapseCandidates();
-        PatternHiddenSingle.execute(sudoku);
-        sudoku.collapseCandidates();
-        PatternHiddenSingle.execute(sudoku);
-        sudoku.collapseCandidates();
-        PatternHiddenSingle.execute(sudoku);
-        sudoku.collapseCandidates();
+        
+        assertEquals(Sudoku.UNDEFINED, sudoku.getElementValue(1, 0, 0, 2));
+        
+        int result = PatternHiddenSingle.execute(sudoku);
         sudoku.dump();
-        assertEquals(5, sudoku.getElementValue(0, 1, 0, 0));
-        assertEquals(6, sudoku.getElementValue(2, 1, 2, 1));
-        assertEquals(true, sudoku.isSolved());
+        assertEquals(expResult, result);
+        assertEquals(3, sudoku.getElementValue(1, 0, 0, 2));
+
     }
+
+    /**
+     * Test of execute method, of class PatternHiddenSingle.
+     */
+    @Test
+    public void testExecuteColumn()
+    {
+        System.out.println("execute - column");
+        String content="   | 1 |   "+
+                       "   | 2 |   "+
+                       "   |   |   "+
+                       "___________"+
+                       "   |   | 3 "+
+                       "   | 5 |   "+
+                       "   | 6 |   "+
+                       "___________"+
+                       "3  |   |   "+
+                       "   |   |  3"+
+                       "   | 9 |   ";        
+
+        Sudoku sudoku = new Sudoku(3);
+        sudoku.fill(content);
+        int expResult = 1;
+        sudoku.dump();
+        
+        assertEquals(Sudoku.UNDEFINED, sudoku.getElementValue(0, 1, 2, 1));
+        
+        int result = PatternHiddenSingle.execute(sudoku);
+        sudoku.dump();
+        assertEquals(expResult, result);
+        assertEquals(3, sudoku.getElementValue(0, 1, 2, 1));
+
+    }    
+
+    /**
+     * Test of execute method, of class PatternHiddenSingle.
+     */
+    @Test
+    public void testExecuteAll()
+    {
+        int cellsBefore;
+        int cellsAfter;
+        System.out.println("execute - all");
+        String content=" 9 |8  |   "+
+                       "  2|   |1 5"+
+                       "   |   | 97"+
+                       "___________"+
+                       "3  |  8|46 "+
+                       "61 | 2 | 78"+
+                       " 29|6  |  1"+
+                       "___________"+
+                       "26 |   |   "+
+                       "9 7|   |3  "+
+                       "   |  7| 1 ";
+
+        Sudoku sudoku = new Sudoku(3);
+        sudoku.fill(content);
+        int expResult = 11;
+        cellsBefore=sudoku.countCellValues();
+        sudoku.dump();
+        
+        assertEquals(Sudoku.UNDEFINED, sudoku.getElementValue(1, 2, 2, 1));
+        
+        int result = PatternHiddenSingle.execute(sudoku);
+        cellsAfter=sudoku.countCellValues();
+        sudoku.dump();
+        assertEquals(expResult, result);
+        assertEquals(3, sudoku.getElementValue(1, 2, 2, 1));
+        assertEquals(expResult, cellsAfter-cellsBefore);
+    }    
     
 }

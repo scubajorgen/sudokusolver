@@ -11,8 +11,8 @@ package net.studioblueplanet.sudokusolver;
  */
 public class Pattern
 {
-    public static void execute(Sudoku sudoku)
+    public static int execute(Sudoku sudoku)
     {
-        
+        return 0;
     }
 }

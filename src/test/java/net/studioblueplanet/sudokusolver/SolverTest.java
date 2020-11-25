@@ -11,7 +11,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.Ignore;
 
 /**
  *
@@ -68,7 +67,7 @@ public class SolverTest
         System.out.println("solve");
         Solver instance = new Solver(sudoku);
         int iterations=instance.solve();
-        assertEquals(4, iterations);
+        assertEquals(1, iterations);
 
     }
     

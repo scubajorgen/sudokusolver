@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 /**
  *
@@ -116,10 +116,55 @@ public class SudokuTest
         int cellCol = 1;
         int value = 5;
         assertEquals(Sudoku.UNDEFINED, theInstance.getElementValue(boxRow, boxCol, cellRow, cellCol));
-        theInstance.setField(boxRow, boxCol, cellRow, cellCol, value);
+        theInstance.setElementValue(boxRow, boxCol, cellRow, cellCol, value);
         assertEquals(value, theInstance.getElementValue(boxRow, boxCol, cellRow, cellCol));
     }
 
+    /**
+     * Test of setField method, of class Sudoku.
+     */
+    @Test
+    public void testSetElementValue2()
+    {
+        System.out.println("setElementValue - clear possible values");
+        Sudoku instance=new Sudoku(3);
+
+        // element
+        assertEquals(true, instance.isCandidate(1, 1, 1, 1, 5)); // same row
+        assertEquals(true, instance.isCandidate(1, 1, 1, 1, 6)); // same row
+        // row
+        assertEquals(true, instance.isCandidate(1, 0, 1, 1, 5)); // same row
+        assertEquals(true, instance.isCandidate(1, 2, 1, 1, 5)); // same row
+        assertEquals(true, instance.isCandidate(1, 0, 0, 1, 5)); // row above
+        assertEquals(true, instance.isCandidate(1, 2, 2, 1, 5)); // row below
+        // col
+        assertEquals(true, instance.isCandidate(0, 1, 1, 1, 5));    // same column
+        assertEquals(true, instance.isCandidate(0, 1, 1, 0, 5));
+        assertEquals(true, instance.isCandidate(2, 1, 1, 2, 5));
+        // box
+        assertEquals(true, instance.isCandidate(1, 1, 0, 0, 5));    // same box
+        assertEquals(true, instance.isCandidate(0, 2, 0, 0, 5));    // other box
+        
+        instance.setElementValue(1, 1, 1, 1, 5);
+        
+        // element
+        assertEquals(false, instance.isCandidate(1, 1, 1, 1, 5)); // same row
+        assertEquals(false, instance.isCandidate(1, 1, 1, 1, 6)); // same row
+        // row
+        assertEquals(false, instance.isCandidate(1, 0, 1, 1, 5)); // same row
+        assertEquals(true , instance.isCandidate(1, 0, 1, 1, 4)); // same row, other value
+        assertEquals(false, instance.isCandidate(1, 2, 1, 1, 5)); // same row
+        assertEquals(true , instance.isCandidate(1, 0, 0, 1, 5)); // row above
+        assertEquals(true , instance.isCandidate(1, 2, 2, 1, 5)); // row below
+        // col
+        assertEquals(false, instance.isCandidate(0, 1, 1, 1, 5)); // same column
+        assertEquals(true , instance.isCandidate(0, 1, 1, 0, 5));
+        assertEquals(true , instance.isCandidate(2, 1, 1, 2, 5));
+        // box
+        assertEquals(false, instance.isCandidate(1, 1, 0, 0, 5));    // same box
+        assertEquals(true , instance.isCandidate(0, 2, 0, 0, 5));    // other box
+    }    
+    
     /**
      * Test of getField method, of class Sudoku.
      */
@@ -144,7 +189,7 @@ public class SudokuTest
         System.out.println("isCandidate");
 
         assertEquals(false, theInstance.isCandidate(0,0,0,0,1));
-        assertEquals(true , theInstance.isCandidate(0,1,0,0,1));
+        assertEquals(true , theInstance.isCandidate(0,1,0,0,5));
     }
 
     /**
@@ -158,11 +203,25 @@ public class SudokuTest
         int boxCol = 1;
         int cellRow = 0;
         int cellCol = 0;
-        int value = 1;
+        int value = 5;
         boolean isCandidate = false;
         assertEquals(true, theInstance.isCandidate(boxRow, boxCol, cellRow, cellCol, value));
-        theInstance.setCandidate(boxRow, boxCol, cellRow, cellCol, value, isCandidate);
+        theInstance.clearCandidates(boxRow, boxCol, cellRow, cellCol);
         assertEquals(false, theInstance.isCandidate(boxRow, boxCol, cellRow, cellCol, value));
+        assertEquals(false, theInstance.isCandidate(boxRow, boxCol, cellRow, cellCol, value));
+    }
+    
+    @Test
+    public void testClearCandidates()
+    {
+        System.out.println("clearCandidates");
+
+        int value = 5;
+        boolean isCandidate = false;
+        assertEquals(true, theInstance.isCandidate(0, 1, 0, 0, value));
+        theInstance.setCandidate(0, 1, 0, 0, value, isCandidate);
+        assertEquals(false, theInstance.isCandidate(0, 1, 0, 0, value));
+        assertEquals(true, theInstance.isCandidate(0, 1, 0, 1, value));
     }
 
     /**
@@ -207,7 +266,7 @@ public class SudokuTest
      * Test of dump method, of class Sudoku.
      */
     @Test
-    @Ignore
+    @Disabled
     public void testDump()
     {
         System.out.println("dump");
@@ -288,14 +347,39 @@ public class SudokuTest
     {
         int value;
         int count;
+        Sudoku instance=new Sudoku(3);
+        for (value=1; value<=9; value++)
+        {
+            instance.setCandidate(0, 1, 1, 1, value, false);
+            instance.setCandidate(0, 0, 0, 0, value, false);
+            instance.setCandidate(0, 2, 2, 2, value, false);
+        }
+        instance.setCandidate(0, 1, 1, 1, 5, true);
+        instance.setCandidate(0, 0, 0, 0, 5, true);
+        instance.setCandidate(0, 2, 2, 2, 5, true);
+        count=instance.collapseCandidates();
+        assertEquals(5, instance.getElementValue(0, 0, 0, 0));
+        assertEquals(3, count);
+        assertEquals(Sudoku.UNDEFINED, instance.getElementValue(1, 2, 1, 2));
+    }
+
+    /**
+     * Test of collapseCandidates method, of class Sudoku
+     */
+    @Test
+    public void testCollapseCandidates2()
+    {
+        int value;
+        int count;
         for (value=1; value<=9; value++)
         {
             theInstance.setCandidate(0, 0, 1, 0, value, false);
         }
         theInstance.setCandidate(0, 0, 1, 0, 5, true);
-        count=theInstance.collapseCandidates();
+        count=theInstance.collapseCandidates(0, 0, 1, 0);
         assertEquals(5, theInstance.getElementValue(0, 0, 1, 0));
         assertEquals(1, count);
         assertEquals(Sudoku.UNDEFINED, theInstance.getElementValue(0, 0, 1, 1));
     }
+
 }

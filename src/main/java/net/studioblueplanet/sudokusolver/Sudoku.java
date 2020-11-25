@@ -6,8 +6,8 @@
 package net.studioblueplanet.sudokusolver;
 
 /**
- * This class represents a Sudoku. It contains the field containing the values.
- * It contains for each field element a list of possible values.
+ * This class represents a Sudoku. It contains the grid containing the values.
+ * It contains for each grid element a list of possible values.
  * Terms (from https://en.wikipedia.org/wiki/Glossary_of_Sudoku): 
  * dimension N  : the size of a box. A common sudoku has N=3
  * grid         : the sudoku grid N*N x N*N cells, N x N boxes
@@ -20,10 +20,10 @@ package net.studioblueplanet.sudokusolver;
 public class Sudoku
 {
 
-    public static final int     UNDEFINED = -1;
-    protected int               dimension;
-    protected int[][][][]       grid;
-    protected boolean[][][][][] possibleValues;
+    public static final int                 UNDEFINED = -1;
+    protected           int                 dimension;      // dimension, 3 or 4
+    private   final     int[][][][]         grid;           // the sudoku grid
+    protected final     boolean[][][][][]   possibleValues; // contains the remaining possible values
 
     /**
      * Constructor
@@ -77,6 +77,7 @@ public class Sudoku
         }
     }
 
+    
     /**
      * Fill sudoku based on the content passed.
      *
@@ -109,16 +110,16 @@ public class Sudoku
                 cellRow = r % dimension;
                 boxCol = c / dimension;
                 cellCol = c % dimension;
-                grid[boxRow][boxCol][cellRow][cellCol] = chr-'0';
+                setElementValue(boxRow, boxCol, cellRow, cellCol, chr-'0');
                 cellCol = count % dimension;
                 count++;
-            } else if (chr == '0' || chr == ' ')
+            } 
+            else if (chr == '0' || chr == ' ')
             {
                 count++;
             }
             i++;
         }
-        fillCandidates();
         if (count != dimension * dimension * dimension * dimension)
         {
             System.err.println("Error in sudoku format");
@@ -155,7 +156,9 @@ public class Sudoku
     }
 
     /**
-     * Fill in a digit in the sudoku
+     * Fill in a digit in the sudoku. It updates the possible values array by
+     * removing the value from row, column and box. It removes all possible values
+     * for the cell itself.
      *
      * @param boxRow  Box row number
      * @param boxCol  Box column number
@@ -163,9 +166,45 @@ public class Sudoku
      * @param cellCol Cell column in cell
      * @param value   Value to enter 1-9
      */
-    public void setField(int boxRow, int boxCol, int cellRow, int cellCol, int value)
+    public void setElementValue(int boxRow, int boxCol, int cellRow, int cellCol, int value)
     {
+        int i;
+        int j;
+        int v;
+        
+        // set the cell value
         grid[boxRow][boxCol][cellRow][cellCol] = value;
+        
+        // clear candidates
+        for (i=0; i<dimension; i++)
+        {
+            for (j=0; j<dimension; j++)
+            {
+                // row
+                if (i!=boxCol || j!=cellCol)
+                {
+                    possibleValues[boxRow][i][cellRow][j][value-1]=false;
+                }
+                else
+                {
+                    for (v=1; v<=dimension*dimension; v++)
+                    {
+                        possibleValues[boxRow][i][cellRow][j][v-1]=false;
+                    }
+                }
+                // column
+                if (i!=boxRow || j!=cellRow)
+                {
+                    possibleValues[i][boxCol][j][cellCol][value-1]=false;
+                }
+                // box
+                if (i!=cellRow || j!=cellCol)
+                {
+                    possibleValues[boxRow][boxCol][i][j][value-1]=false;
+                }
+            }
+        }
+        
     }
 
     /**
@@ -211,6 +250,42 @@ public class Sudoku
     {
         return possibleValues[boxRow][boxCol][cellRow][cellCol][value - 1];
     }    
+    
+    /**
+     * This method removes all candidates for given grid location
+     * @param boxRow
+     * @param boxCol
+     * @param cellRow
+     * @param cellCol 
+     */
+    public void clearCandidates(int boxRow, int boxCol, int cellRow, int cellCol)
+    {
+        int value;
+        for(value=0; value<dimension*dimension; value++)
+        {
+            possibleValues[boxRow][boxCol][cellRow][cellCol][value]=false;
+        }
+    }
+
+    /**
+     * Clear all possible candidates for a cell, but one
+     * @param boxRow  Box row number
+     * @param boxCol  Box column number
+     * @param cellRow Cell row in Cell
+     * @param cellCol Cell column in cell
+     * @param value   Value to enter 1-9
+     */
+    public void clearCandidatesButOne(int boxRow, int boxCol, int cellRow, int cellCol, int value)
+    {
+        for (int v = 1; v <= dimension * dimension; v++)
+        {
+            if (v!=value)
+            {
+                possibleValues[boxRow][boxCol][cellRow][cellCol][v-1] = false;
+            }
+        }        
+    }
+
     
     /**
      * Returns whether the soduko has been solved
@@ -470,29 +545,46 @@ public class Sudoku
                 {
                     for (cellCol = 0; cellCol < dimension; cellCol++)
                     {
-                        if (grid[boxRow][boxCol][cellRow][cellCol]==UNDEFINED)
-                        {
-                            count=0;
-                            theValue=UNDEFINED;
-                            for (value=1; value<=dimension*dimension; value++)
-                            {
-                                if(possibleValues[boxRow][boxCol][cellRow][cellCol][value-1])
-                                {
-                                    theValue=value;
-                                    count++;
-                                }
-                            }
-                            if (count==1)
-                            {
-                                possibleValues[boxRow][boxCol][cellRow][cellCol][theValue-1]=false;
-                                grid[boxRow][boxCol][cellRow][cellCol]=theValue;
-                                found++;
-                            }
-                        }
+                        found+=collapseCandidates(boxRow, boxCol, cellRow, cellCol);
                     }
                 }
             }
         }
         return found;
     }
+    
+    /**
+     * If there is only one candidate, move it to the grid. This applies to
+     * given grid location
+     * The number of element values created
+     */
+    public int collapseCandidates(int boxRow, int boxCol, int cellRow, int cellCol)
+    {
+        int value;
+        int theValue;
+        int count;
+        int found;
+
+        found=0;
+        if (grid[boxRow][boxCol][cellRow][cellCol]==UNDEFINED)
+        {
+            count=0;
+            theValue=UNDEFINED;
+            for (value=1; value<=dimension*dimension; value++)
+            {
+                if(possibleValues[boxRow][boxCol][cellRow][cellCol][value-1])
+                {
+                    theValue=value;
+                    count++;
+                }
+            }
+            if (count==1)
+            {
+                this.setElementValue(boxRow, boxCol, cellRow, cellCol, theValue);
+                found++;
+            }
+        }
+
+        return found;
+    }    
 }

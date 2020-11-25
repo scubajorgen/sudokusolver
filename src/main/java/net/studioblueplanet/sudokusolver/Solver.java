@@ -6,7 +6,7 @@
 package net.studioblueplanet.sudokusolver;
 
 /**
- *
+ * This class solves Sudoku
  * @author jorgen
  */
 public class Solver
@@ -28,13 +28,21 @@ public class Solver
         while (iteration!=MAX_ITERATIONS && !sudoku.isSolved())
         {
             System.out.println("Iteration "+iteration);
-            PatternHiddenSingle.execute(sudoku);
-            count=sudoku.collapseCandidates();
+            
+            count=PatternNakedSingle.execute(sudoku);
+            if (count>0)
+            {
+                System.out.println(count+" element values found by Naked Single");
+            }
+            sudoku.dump();
+
+            count=PatternHiddenSingle.execute(sudoku);
             if (count>0)
             {
                 System.out.println(count+" element values found by Hidden Single");
             }
             sudoku.dump();
+
             iteration++;
         }
         return iteration;

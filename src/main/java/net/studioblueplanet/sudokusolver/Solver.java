@@ -23,26 +23,44 @@ public class Solver
     {
         int iteration;
         int count;
+        int overallCount;
+        boolean exit;
         
         iteration=0;
-        while (iteration!=MAX_ITERATIONS && !sudoku.isSolved())
+        exit=false;
+        while (iteration!=MAX_ITERATIONS && !sudoku.isSolved() && !exit)
         {
             System.out.println("Iteration "+iteration);
             
+            overallCount=0;
             count=PatternNakedSingle.execute(sudoku);
             if (count>0)
             {
                 System.out.println(count+" element values found by Naked Single");
+                overallCount+=count;
+                sudoku.dump();
             }
-            sudoku.dump();
 
             count=PatternHiddenSingle.execute(sudoku);
             if (count>0)
             {
                 System.out.println(count+" element values found by Hidden Single");
+                overallCount+=count;
+                sudoku.dump();
             }
-            sudoku.dump();
 
+            count=PatternIntersection.execute(sudoku);
+            if (count>0)
+            {
+                System.out.println(count+" element values found by Intersection");
+                overallCount+=count;
+                sudoku.dump();
+            }
+
+            if (overallCount==0)
+            {
+                exit=true;
+            }
             iteration++;
         }
         return iteration;
